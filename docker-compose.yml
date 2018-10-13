@@ -1,0 +1,52 @@
+version: '3.7'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    restart: always
+    volumes:
+      - './logs/nginx:/var/log/nginx'
+      - 'certificates:/etc/nginx/certs:ro'
+      - 'vhosts:/etc/nginx/vhost.d'
+      - 'htmls:/usr/share/nginx/html'
+      - '/var/run/docker.sock:/tmp/docker.sock:ro'
+    environment:
+      - DEFAULT_HOST=example.com,*.example-test.com
+      # - HTTPS_METHOD=noredirect
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - nginx-proxy
+    labels:
+      # This is probably not needed anymore, need to check latest version of jwilder/nginx-proxy image source
+      - com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy
+
+  nginx-letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-letsencrypt
+    restart: always
+    volumes:
+      - './certificates:/etc/nginx/certs'
+      - 'certificates:/etc/nginx/certs:rw'
+      - 'vhosts:/etc/nginx/vhost.d'
+      - 'htmls:/usr/share/nginx/html'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
+      # DEBUG: 'true'
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    name: nginx-proxy
+
+volumes:
+  certificates:
+    name: certificates
+  vhosts:
+    name: vhosts
+  htmls:
+    name: htmls
