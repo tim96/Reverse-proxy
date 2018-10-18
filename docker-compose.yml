@@ -29,6 +29,7 @@ services:
     restart: always
     volumes:
       - './certificates:/etc/nginx/certs'
+      - './certs:/etc/nginx/certs'
       - 'certificates:/etc/nginx/certs:rw'
       - 'vhosts:/etc/nginx/vhost.d'
       - 'htmls:/usr/share/nginx/html'
